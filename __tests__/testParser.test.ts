@@ -17,6 +17,19 @@ describe('resolveFileAndLine', () => {
     expect(line).toBe(1)
   })
 
+  it('yaxunit', async () => {
+    const {fileName, line} = await resolveFileAndLine(
+      null,
+      null,
+      'ОМ_ЮТМетаданные.РегистрыДвиженийДокумента',
+      `{YAXUNIT ОбщийМодуль.ЮТУтверждения.Модуль(716)}:ОбработатьРезультатСравнения(Результат, Сообщение, Ложь, ФактическаяДлина, ОжидаемоеЗначение);
+    {tests ОбщийМодуль.ОМ_ЮТМетаданные.Модуль(67)}:ЮТест.ОжидаетЧто(ЮТМетаданные.РегистрыДвиженийДокумента(ПредопределенноеЗначение("Документ.ПриходТовара.ПустаяСсылка")))
+    {(1)}:ОМ_ЮТМетаданные.РегистрыДвиженийДокумента()`
+    )
+    expect(fileName).toBe('ОМ_ЮТМетаданные')
+    expect(line).toBe(67)
+  })
+
   it('should parse correctly fileName and line for a Java file', async () => {
     const {fileName, line} = await resolveFileAndLine(
       null,
@@ -123,6 +136,11 @@ note: run with &#x60;RUST_BACKTRACE&#x3D;1&#x60; environment variable to display
 })
 
 describe('resolvePath', () => {
+  it('should find correct file for Onec fileName', async () => {
+    const path = await resolvePath('ОМ_ЮТМетаданные', ['/build/', '/__pycache__/'])
+    expect(path).toBe('test_results/onec/tests/src/CommonModules/ОМ_ЮТМетаданные/Module.bsl')
+  })
+
   it('should find correct file for Java fileName', async () => {
     const path = await resolvePath('EmailAddressTest', ['/build/', '/__pycache__/'])
     expect(path).toBe('test_results/tests/email/src/test/java/action/surefire/report/email/EmailAddressTest.java')

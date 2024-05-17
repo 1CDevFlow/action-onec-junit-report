@@ -387,8 +387,10 @@ const utils_1 = __nccwpck_require__(918);
  * https://github.com/mikepenz/action-junit-report/
  */
 async function resolveFileAndLine(file, line, className, output) {
-    let fileName = file ? file : className.split('.').slice(-1)[0];
-    const lineNumber = safeParseInt(line);
+    let fileName = file ? file : className.split('.')[0];
+    const r = new RegExp(`(?<=${fileName}\\.(Модуль|Module)\\()\\d+`);
+    const match = r.exec(output);
+    const lineNumber = match ? safeParseInt(match[0]) : null;
     try {
         if (fileName && lineNumber) {
             return { fileName, line: lineNumber };
@@ -439,7 +441,7 @@ function safeParseInt(line) {
 async function resolvePath(fileName, excludeSources, followSymlink = false) {
     core.debug(`Resolving path for ${fileName}`);
     const normalizedFilename = fileName.replace(/^\.\//, ''); // strip relative prefix (./)
-    const globber = await glob.create(`**/${normalizedFilename}.*`, {
+    const globber = await glob.create(`**/${normalizedFilename}/*Module.bsl`, {
         followSymbolicLinks: followSymlink
     });
     const searchPath = globber.getSearchPaths() ? globber.getSearchPaths()[0] : '';

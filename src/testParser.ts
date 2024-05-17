@@ -58,8 +58,11 @@ export async function resolveFileAndLine(
   className: string,
   output: string
 ): Promise<Position> {
-  let fileName = file ? file : className.split('.').slice(-1)[0]
-  const lineNumber = safeParseInt(line)
+  let fileName = file ? file : className.split('.')[0]
+  const r = new RegExp(`(?<=${fileName}\\.(Модуль|Module)\\()\\d+`)
+  const match = r.exec(output)
+  const lineNumber = match ? safeParseInt(match[0]) : null
+
   try {
     if (fileName && lineNumber) {
       return {fileName, line: lineNumber}
@@ -113,7 +116,7 @@ function safeParseInt(line: string | null): number | null {
 export async function resolvePath(fileName: string, excludeSources: string[], followSymlink = false): Promise<string> {
   core.debug(`Resolving path for ${fileName}`)
   const normalizedFilename = fileName.replace(/^\.\//, '') // strip relative prefix (./)
-  const globber = await glob.create(`**/${normalizedFilename}.*`, {
+  const globber = await glob.create(`**/${normalizedFilename}/*Module.bsl`, {
     followSymbolicLinks: followSymlink
   })
   const searchPath = globber.getSearchPaths() ? globber.getSearchPaths()[0] : ''
